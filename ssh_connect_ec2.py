@@ -57,7 +57,7 @@ def start_instance(instance_id, region_name=None):
     print(f"[{time}] Instance id={instance_id} successfully started!")
 
 
-def ssh_connect(instance_name, instance_ip, tmux_session=None):
+def ssh_connect(instance_name, instance_ip, new_session=None, attach_session=None):
     time = datetime.now().time().replace(microsecond=0)
     print(f"[{time}] ssh connect {instance_ip} ...")
 
@@ -69,11 +69,11 @@ def ssh_connect(instance_name, instance_ip, tmux_session=None):
         "-o", f"User=ubuntu",
     ]
 
-    if tmux_session is not None:
-        if tmux_session == 'new':
-            cmd.append(f"tmux new -s se_{time.hour}_{time.minute}")
-        else:
-            cmd.append(f"tmux attach -t {tmux_session}")
+    if new_session is not None:
+        cmd.append(f"tmux new -s {new_session}")
+
+    if attach_session is not None:
+        cmd.append(f"tmux attach -t {attach_session}")
 
     subprocess.run(cmd, check=True)
 
@@ -83,7 +83,8 @@ def parse_comand_args():
 
     parser.add_argument('--name')
     parser.add_argument('--region')
-    parser.add_argument('--tmux')
+    parser.add_argument('--new-session')
+    parser.add_argument('--attach-session')
 
     return parser.parse_args()
 
@@ -94,4 +95,4 @@ instance_before = describe_instance(args.name, args.region)
 start_instance(instance_before['id'], args.region)
 
 instance_after = describe_instance(args.name, args.region)
-ssh_connect(instance_after['name'], instance_after['ip'], args.tmux)
+ssh_connect(instance_after['name'], instance_after['ip'], args.new_session, args.attach_session)
